@@ -1,0 +1,13 @@
+[package]
+name = "lazarobox-img"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+image = "0.25"
+webp = "0.3"
+indicatif = "0.18"
+console = "0.16"
+walkdir = "2"
+anyhow = "1"
