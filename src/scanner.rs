@@ -1,6 +1,15 @@
 use anyhow::{bail, Result};
-use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
+use std::{
+    fs,
+    path::{Path, PathBuf}
+};
+// use walkdir::WalkDir;
+
+/// Busca imágenes en una ruta.
+///
+/// Si recibe un archivo, valida la extensión.
+/// Si recibe un directorio, solo busca imágenes en ese primer nivel.
+/// No recorre subdirectorios por defecto.
 
 pub fn find_images(input: &Path) -> Result<Vec<PathBuf>> {
     if !input.exists() {
@@ -16,8 +25,7 @@ pub fn find_images(input: &Path) -> Result<Vec<PathBuf>> {
     }
 
     if input.is_dir() {
-        let images = WalkDir::new(input)
-            .into_iter()
+        let images = fs::read_dir(input)?
             .filter_map(|entry| entry.ok())
             .filter(|entry| entry.path().is_file())
             .map(|entry| entry.path().to_path_buf())

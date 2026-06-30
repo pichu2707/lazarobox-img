@@ -1,14 +1,20 @@
-mod scanner;
+mod export;
+mod inspector;
 mod optimizer;
+mod report;
+mod scanner;
 
 use clap::Parser;
 use std::path::PathBuf;
+use std::time::Instant;
+
+use crate::report::print_result;
 
 #[derive(Parser, Debug)]
 #[command(
-    name= "lazarobox-img",
-    version="0.1.0",
-    about="Optimizador de imágenes CLI con estilo LazaroBox"
+    name = "lazarobox-img",
+    version = "0.1.0",
+    about = "Optimizador de imágenes CLI con estilo LazaroBox"
 )]
 
 struct Args {
@@ -16,8 +22,11 @@ struct Args {
     input: PathBuf,
 
     /// Ancho máximo de salida
-    #[arg(short, long, default_value_t = 1200)]
-    width: u32,
+    #[arg(short, long)]
+    width: Option<u32>,
+
+    #[arg(long)]
+    height: Option<u32>,
 
     /// Calidad de salida, de 1 a 100
     #[arg(short, long, default_value_t = 80)]
@@ -28,13 +37,14 @@ struct Args {
     format: String,
 }
 
-
-fn main()->anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+    let start = Instant::now();
 
     println!("LazaroBox Image Optimizer");
     println!("Entrada {:?}", args.input);
-    println!("Ancho máximo: {}", args.width);
+    println!("Ancho máximo: {:?}", args.width);
+    println!("Alto máximo: {:?}", args.height);
     println!("Calidad: {}", args.quality);
     println!("Formato: {}", args.format);
 
@@ -42,9 +52,40 @@ fn main()->anyhow::Result<()> {
     println!();
     println!("Imagen destacadas: {}", images.len());
 
+    let output_dir = export::create_output_dir(&args.input)?;
+    println!("Directorioro de salida: {}", output_dir.display());
+    let mut optimization_results = Vec::new();
+    let mut skipped = 0usize;
+
     for image in images {
-        let info = optimizer::inspect(&image)?;
-        println!("- {:#?}", info);
+        let already_target_format = image
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.eq_ignore_ascii_case(&args.format))
+            .unwrap_or(false);
+
+        if already_target_format {
+            println!("Saltada: {} ya está en {}", image.display(), args.format);
+            skipped += 1;
+            continue;
+        }
+
+        let output_file = export::create_output_file(&output_dir, &image, &args.format)?;
+
+        let result = optimizer::optimize(
+            &image,
+            &output_file,
+            args.width,
+            args.height,
+            args.quality,
+            &args.format,
+        )?;
+        report::print_result(&result);
+        optimization_results.push(result)
     }
+
+    let duration = start.elapsed();
+
+    report::print_summary(&optimization_results, skipped, &output_dir, duration);
     Ok(())
 }
