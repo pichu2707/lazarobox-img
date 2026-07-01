@@ -1,14 +1,15 @@
+mod encoders;
 mod export;
 mod inspector;
 mod optimizer;
 mod report;
 mod scanner;
+mod types;
 
 use clap::Parser;
 use std::path::PathBuf;
 use std::time::Instant;
-
-use crate::report::print_result;
+use types::OutputFormat;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -33,8 +34,8 @@ struct Args {
     quality: u8,
 
     /// Formato de salida: webp, jpg o png
-    #[arg(short, long, default_value = "webp")]
-    format: String,
+    #[arg(short, long, default_value_t = OutputFormat::Webp)]
+    format: OutputFormat,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -58,7 +59,7 @@ fn main() -> anyhow::Result<()> {
     let mut skipped = 0usize;
 
     for image in images {
-        let output_file = export::create_output_file(&output_dir, &image, &args.format)?;
+        let output_file = export::create_output_file(&output_dir, &image, args.format.extension())?;
 
         let result = optimizer::optimize(
             &image,
@@ -66,7 +67,7 @@ fn main() -> anyhow::Result<()> {
             args.width,
             args.height,
             args.quality,
-            &args.format,
+            args.format,
         )?;
         report::print_result(&result);
         optimization_results.push(result)

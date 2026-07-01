@@ -5,7 +5,7 @@ pub enum OptimizationDecision {
     SkipSameFormat,
 }
 
-let same_format =image
+let same_format = image
 .extension()
 .and_then(|ext|ext.to_str())
 .map(|ext|ext.eq_ignore_ascii_case(&args.format))

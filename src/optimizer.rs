@@ -12,14 +12,12 @@
 //!
 //! Este módulo no debe imprimir en terminal.
 //! La salida visual pertenece a `report.rs`.
-
+use crate::encoders;
 use crate::inspector::{self, ImageInfo};
+use crate::types::OutputFormat;
 use anyhow::Result;
-use image::{DynamicImage, GenericImageView};
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use image::DynamicImage;
+use std::path::{Path, PathBuf};
 
 /// Imagen ya cargada en memoria.
 ///
@@ -43,7 +41,7 @@ pub struct OptimizedImage {
     /// Ruta donde se ha guardado la imagen optimizada.
     pub output_path: PathBuf,
     /// Formato generado: webp, avif, png, jpeg...
-    pub format: String,
+    pub format: OutputFormat,
     /// Tamañlo final e bytes
     pub size: u64,
     /// Anchura final en pixeles
@@ -73,19 +71,19 @@ pub fn optimize(
     max_width: Option<u32>,
     max_height: Option<u32>,
     quality: u8,
-    format: &str,
+    format: OutputFormat,
 ) -> Result<OptimizationResult> {
     let loaded = load(path)?;
 
     let resized = resize_image(&loaded, max_width, max_height);
 
-    let final_size = save_webp(&resized, output_path, quality)?;
+    let final_size = encoders::save_image(&resized, output_path, quality, format)?;
 
     let optimized_info = inspector::inspect(output_path)?;
 
     let optimized = OptimizedImage {
         output_path: output_path.to_path_buf(),
-        format: format.to_string(),
+        format: format,
         size: final_size,
         width: optimized_info.width,
         height: optimized_info.height,
@@ -125,36 +123,6 @@ pub fn resize_image(
         target_height,
         image::imageops::FilterType::Lanczos3,
     )
-}
-
-/// Guarda una imagen en formato WebP.
-///
-/// Flujo
-/// -----
-/// 1. Recibe una imagen ya procesada en memoria.
-/// 2. La guarda en la ruta indicada
-/// 3. Lee el tamaño final del archivo generado
-/// 4. Devuelve ese tamaño en bytes.
-///
-///
-/// Parámetros
-/// -----------
-/// `image`:
-/// Imagen que queremos exportar.
-///
-/// Nota
-/// -----
-/// De momento usamos `save`, por lo que la calidad todavía no se aplica.
-/// Más adelante cambiaremos esta parte por un encoder WebP configurable.
-pub fn save_webp(image: &DynamicImage, output_path: &Path, quality: u8) -> Result<u64> {
-    let encoder =
-        webp::Encoder::from_image(image).map_err(|err| anyhow::anyhow!(err.to_string()))?;
-    let webp_data = encoder.encode(quality as f32);
-
-    fs::write(output_path, &*webp_data)?;
-
-    let metadata = fs::metadata(output_path)?;
-    Ok(metadata.len())
 }
 
 ///Calcular las dimensiones finales respetando la proporción original
