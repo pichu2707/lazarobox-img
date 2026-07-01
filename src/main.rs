@@ -58,18 +58,6 @@ fn main() -> anyhow::Result<()> {
     let mut skipped = 0usize;
 
     for image in images {
-        let already_target_format = image
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .map(|ext| ext.eq_ignore_ascii_case(&args.format))
-            .unwrap_or(false);
-
-        if already_target_format {
-            println!("Saltada: {} ya está en {}", image.display(), args.format);
-            skipped += 1;
-            continue;
-        }
-
         let output_file = export::create_output_file(&output_dir, &image, &args.format)?;
 
         let result = optimizer::optimize(
