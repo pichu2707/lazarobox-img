@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
             "Processing image",
             index + 1,
             images.len(),
-            image.display().to_string(),
+            &image.display().to_string(),
         );
         let metadata = metadata::read_metadata(image)?;
         ui::metadata::print(&metadata);
