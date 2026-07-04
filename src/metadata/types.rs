@@ -9,7 +9,7 @@ pub enum MetadataStatus {
 }
 
 impl Default for MetadataStatus {
-    fn default() -> self {
+    fn default() -> Self {
         MetadataStatus::Missing
     }
 }
@@ -21,7 +21,7 @@ pub struct MetadataField<T> {
 }
 
 impl<T> Default for MetadataField<T> {
-    fn default() -> self {
+    fn default() -> Self {
         MetadataField {
             value: None,
             status: MetadataStatus::Missing,

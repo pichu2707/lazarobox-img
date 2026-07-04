@@ -10,5 +10,5 @@ pub mod types;
 pub mod web;
 
 pub use image::ImageMetadata;
-pub use reader::reade_metadata;
+pub use reader::read_metadata;
 pub use types::{MetadataField, MetadataStatus};

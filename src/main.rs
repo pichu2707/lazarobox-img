@@ -1,6 +1,7 @@
 mod encoders;
 mod export;
 mod inspector;
+mod metadata;
 mod optimizer;
 mod policy;
 mod report;
@@ -11,6 +12,8 @@ use clap::Parser;
 use std::path::PathBuf;
 use std::time::Instant;
 use types::OutputFormat;
+
+use crate::report::print_result;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -72,6 +75,8 @@ fn main() -> anyhow::Result<()> {
         )?;
         report::print_result(&result);
         optimization_results.push(result);
+        let metadata = metadata::read_metadata(&image)?;
+        println!("{:?}", metadata);
         match policy::evaluate(&image, args.format, args.width, args.height)? {
             policy::OptimizationDecision::SkipAlreadyOptimized => {
                 println!("Saltada: {} ya está optimizada: ", image.display());

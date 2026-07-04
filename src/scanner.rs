@@ -1,7 +1,7 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::{
     fs,
-    path::{Path, PathBuf}
+    path::{Path, PathBuf},
 };
 // use walkdir::WalkDir;
 

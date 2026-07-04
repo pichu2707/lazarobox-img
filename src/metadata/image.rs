@@ -1,3 +1,4 @@
+use crate::metadata::MetadataField;
 use crate::metadata::{
     ai::AiMetadata, privacy::PrivacyMetadata, rights::RightsMetadata, seo::SeoMetadata,
     social::SocialMetadata, technical::TechnicalMetadata, web::WebMetadata,
