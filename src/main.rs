@@ -76,7 +76,7 @@ fn main() -> anyhow::Result<()> {
         report::print_result(&result);
         optimization_results.push(result);
         let metadata = metadata::read_metadata(&image)?;
-        println!("{:?}", metadata);
+        metadata::report::print(&metadata);
         match policy::evaluate(&image, args.format, args.width, args.height)? {
             policy::OptimizationDecision::SkipAlreadyOptimized => {
                 println!("Saltada: {} ya está optimizada: ", image.display());
