@@ -2,6 +2,7 @@ mod encoders;
 mod export;
 mod inspector;
 mod optimizer;
+mod policy;
 mod report;
 mod scanner;
 mod types;
@@ -70,7 +71,16 @@ fn main() -> anyhow::Result<()> {
             args.format,
         )?;
         report::print_result(&result);
-        optimization_results.push(result)
+        optimization_results.push(result);
+        match policy::evaluate(&image, args.format, args.width, args.height)? {
+            policy::OptimizationDecision::SkipAlreadyOptimized => {
+                println!("Saltada: {} ya está optimizada: ", image.display());
+                skipped += 1;
+                continue;
+            }
+            policy::OptimizationDecision::Optimize => {}
+            _ => {}
+        }
     }
 
     let duration = start.elapsed();
