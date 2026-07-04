@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 use types::OutputFormat;
 
-use crate::types::progress;
+use crate::types::ProgressState;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -73,8 +73,8 @@ fn main() -> anyhow::Result<()> {
         let progress = types::ProgressState::new(
             "Processing image",
             index + 1,
-            image.len(),
-            images.display().to_string(),
+            images.len(),
+            image.display().to_string(),
         );
         let metadata = metadata::read_metadata(image)?;
         ui::metadata::print(&metadata);
