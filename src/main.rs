@@ -14,6 +14,8 @@ use std::path::PathBuf;
 use std::time::Instant;
 use types::OutputFormat;
 
+use crate::types::progress;
+
 #[derive(Parser, Debug)]
 #[command(
     name = "lazarobox-img",
@@ -44,13 +46,7 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    ui::header::print(
-        &args.input,
-        args.width,
-        args.height,
-        args.quality,
-        args.format,
-    );
+    ui::header::print();
 
     let start = Instant::now();
 
@@ -60,14 +56,30 @@ fn main() -> anyhow::Result<()> {
 
     let output_dir = export::create_output_dir(&args.input)?;
     println!("Directorioro de salida: {}", output_dir.display());
+    ui::project::print(
+        &args.input,
+        &output_dir,
+        images.len(),
+        args.width,
+        args.height,
+        args.quality,
+        args.format,
+    );
+
     let mut optimization_results = Vec::new();
     let mut skipped = 0usize;
 
-    for image in images {
-        let metadata = metadata::read_metadata(&image)?;
+    for (index, image) in images.iter().enumerate() {
+        let progress = types::ProgressState::new(
+            "Processing image",
+            index + 1,
+            image.len(),
+            images.display().to_string(),
+        );
+        let metadata = metadata::read_metadata(image)?;
         ui::metadata::print(&metadata);
-
-        match policy::evaluate(&image, args.format, args.width, args.height)? {
+        ui::progress::print(&progress);
+        match policy::evaluate(image, args.format, args.width, args.height)? {
             policy::OptimizationDecision::SkipAlreadyOptimized => {
                 println!("Saltada: {} ya está optimizada: ", image.display());
                 skipped += 1;
@@ -77,10 +89,10 @@ fn main() -> anyhow::Result<()> {
             _ => {}
         }
 
-        let output_file = export::create_output_file(&output_dir, &image, args.format.extension())?;
+        let output_file = export::create_output_file(&output_dir, image, args.format.extension())?;
 
         let result = optimizer::optimize(
-            &image,
+            image,
             &output_file,
             args.width,
             args.height,
