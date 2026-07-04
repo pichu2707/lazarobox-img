@@ -1,17 +1,12 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum MetadataStatus {
+    #[default]
     Missing,
     Present,
     Added,
     Modified,
     Removed,
     Preserved,
-}
-
-impl Default for MetadataStatus {
-    fn default() -> Self {
-        MetadataStatus::Missing
-    }
 }
 
 #[derive(Debug, Clone)]

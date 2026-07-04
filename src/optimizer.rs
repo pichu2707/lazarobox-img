@@ -83,7 +83,7 @@ pub fn optimize(
 
     let optimized = OptimizedImage {
         output_path: output_path.to_path_buf(),
-        format: format,
+        format,
         size: final_size,
         width: optimized_info.width,
         height: optimized_info.height,

@@ -24,7 +24,7 @@ pub fn evaluate(
         .map(|ext| ext.eq_ignore_ascii_case(format.extension()))
         .unwrap_or(false);
 
-    let info = inspector::inspect(&image)?;
+    let info = inspector::inspect(image)?;
 
     let already_small_enough = width.map(|w| info.width <= w).unwrap_or(true)
         && height.map(|h| info.height <= h).unwrap_or(true);

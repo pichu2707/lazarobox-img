@@ -25,7 +25,7 @@ pub fn parse_all(exif_data: &exif::Exif, metadata: &mut ImageMetadata) {
     seo::parse(exif_data, metadata);
 }
 
-pub fn normalize_string(value: &str) -> String {
+fn normalize_string(value: &str) -> String {
     value
         .replace("\\x0a", "\n")
         .replace('\r', "")

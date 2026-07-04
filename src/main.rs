@@ -4,16 +4,15 @@ mod inspector;
 mod metadata;
 mod optimizer;
 mod policy;
-mod report;
 mod scanner;
+mod theme;
 mod types;
+mod ui;
 
 use clap::Parser;
 use std::path::PathBuf;
 use std::time::Instant;
 use types::OutputFormat;
-
-use crate::report::print_result;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -44,14 +43,16 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let start = Instant::now();
 
-    println!("LazaroBox Image Optimizer");
-    println!("Entrada {:?}", args.input);
-    println!("Ancho máximo: {:?}", args.width);
-    println!("Alto máximo: {:?}", args.height);
-    println!("Calidad: {}", args.quality);
-    println!("Formato: {}", args.format);
+    ui::header::print(
+        &args.input,
+        args.width,
+        args.height,
+        args.quality,
+        args.format,
+    );
+
+    let start = Instant::now();
 
     let images = scanner::find_images(&args.input)?;
     println!();
@@ -63,6 +64,19 @@ fn main() -> anyhow::Result<()> {
     let mut skipped = 0usize;
 
     for image in images {
+        let metadata = metadata::read_metadata(&image)?;
+        ui::metadata::print(&metadata);
+
+        match policy::evaluate(&image, args.format, args.width, args.height)? {
+            policy::OptimizationDecision::SkipAlreadyOptimized => {
+                println!("Saltada: {} ya está optimizada: ", image.display());
+                skipped += 1;
+                continue;
+            }
+            policy::OptimizationDecision::Optimize => {}
+            _ => {}
+        }
+
         let output_file = export::create_output_file(&output_dir, &image, args.format.extension())?;
 
         let result = optimizer::optimize(
@@ -73,23 +87,13 @@ fn main() -> anyhow::Result<()> {
             args.quality,
             args.format,
         )?;
-        report::print_result(&result);
+
+        ui::image::print_result(&result);
         optimization_results.push(result);
-        let metadata = metadata::read_metadata(&image)?;
-        metadata::report::print(&metadata);
-        match policy::evaluate(&image, args.format, args.width, args.height)? {
-            policy::OptimizationDecision::SkipAlreadyOptimized => {
-                println!("Saltada: {} ya está optimizada: ", image.display());
-                skipped += 1;
-                continue;
-            }
-            policy::OptimizationDecision::Optimize => {}
-            _ => {}
-        }
     }
 
     let duration = start.elapsed();
 
-    report::print_summary(&optimization_results, skipped, &output_dir, duration);
+    ui::summary::print_summary(&optimization_results, skipped, &output_dir, duration);
     Ok(())
 }

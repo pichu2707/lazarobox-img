@@ -120,3 +120,198 @@ Primera versión estable.
 - CLI profesional.
 - Publicación en crates.io.
 - Releases en GitHub.
+
+# LazaroBox Image v0.4
+
+## Objetivo
+
+Completar el sistema de gestión de metadatos permitiendo leer, modificar, eliminar y escribir información de forma segura sobre las imágenes.
+
+La v0.4 convierte el motor de metadatos en una herramienta completa para fotógrafos, desarrolladores, webmasters, profesionales SEO y creadores de contenido.
+
+---
+
+# Nuevas funcionalidades
+
+## Metadata Writer
+
+Implementar el sistema de escritura de metadatos.
+
+Capacidades:
+
+- escribir nuevos metadatos
+- modificar metadatos existentes
+- eliminar metadatos
+- preservar metadatos existentes
+- sobrescribir únicamente los campos indicados
+
+---
+
+## Metadata Profiles
+
+Crear perfiles predefinidos para distintos casos de uso.
+
+Ejemplos:
+
+- SEO
+- SEO Local
+- Open Graph
+- WordPress
+- Shopify
+- Redes Sociales
+- Fotografía
+- IA
+- Limpieza completa
+
+Cada perfil aplicará automáticamente un conjunto de reglas sobre los metadatos.
+
+---
+
+## Metadata Diff
+
+Comparar:
+
+- imagen original
+- imagen optimizada
+
+Mostrando:
+
+- campos añadidos
+- campos eliminados
+- campos modificados
+- campos preservados
+
+---
+
+## GPS
+
+Lectura y escritura de:
+
+- Latitud
+- Longitud
+- Altitud
+
+Permitiendo:
+
+- mantener
+- modificar
+- eliminar
+
+---
+
+## Derechos
+
+Soporte para:
+
+- Author
+- Copyright
+- License
+- Source URL
+
+---
+
+## IA
+
+Detectar software conocido:
+
+- Midjourney
+- Stable Diffusion
+- ComfyUI
+- FLUX
+- Fooocus
+- DALL·E
+
+Permitir:
+
+- mantener información
+- eliminar trazas IA
+- añadir información personalizada
+
+---
+
+## Metadata Report
+
+Nuevo informe específico de metadatos.
+
+Ejemplo:
+
+WEB
+
+✓ Description
+
+✓ Alt
+
+✗ Keywords
+
+SEO
+
+✓ GPS
+
+✗ Business
+
+RIGHTS
+
+✓ Author
+
+✓ Copyright
+
+AI
+
+✓ Software
+
+✗ Model
+
+TECHNICAL
+
+✓ ICC
+
+✓ Orientation
+
+---
+
+## Batch Metadata
+
+Aplicar modificaciones a múltiples imágenes simultáneamente.
+
+---
+
+## Tests
+
+Añadir batería de imágenes de prueba:
+
+- sin EXIF
+- EXIF completo
+- GPS
+- Photoshop
+- Lightroom
+- IA
+- WordPress
+- ICC
+
+---
+
+# Arquitectura
+
+La arquitectura definida en la v0.2 no cambia.
+
+Se añaden:
+
+metadata/
+
+reader/
+
+writer/
+
+profiles/
+
+diff/
+
+tests/
+
+manteniendo el mismo modelo ImageMetadata.
+
+---
+
+# Objetivo final de la versión
+
+Convertir LazaroBox Image en una herramienta completa de gestión de metadatos preparada para la futura interfaz TUI y para automatización mediante CLI.
