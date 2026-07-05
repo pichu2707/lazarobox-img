@@ -14,8 +14,6 @@ use std::path::PathBuf;
 use std::time::Instant;
 use types::OutputFormat;
 
-use crate::types::ProgressState;
-
 #[derive(Parser, Debug)]
 #[command(
     name = "lazarobox-img",
@@ -78,7 +76,15 @@ fn main() -> anyhow::Result<()> {
         );
         let metadata = metadata::read_metadata(image)?;
         ui::metadata::print(&metadata);
+        theme::stage("After applying metadata plan");
         ui::progress::print(&progress);
+        let metadata_plan = metadata::plan::build_remove_ai_plan(&metadata);
+        ui::plan::print(&metadata_plan);
+
+        let mut cleaned_metadata = metadata.clone();
+        metadata::writer::apply(&mut cleaned_metadata, &metadata_plan);
+        ui::metadata::print(&cleaned_metadata);
+
         match policy::evaluate(image, args.format, args.width, args.height)? {
             policy::OptimizationDecision::SkipAlreadyOptimized => {
                 println!("Saltada: {} ya está optimizada: ", image.display());

@@ -1,12 +1,16 @@
 #[derive(Debug, Clone, Default)]
 pub enum MetadataStatus {
     #[default]
+    /// El campo no existe en la imagen.
     Missing,
+    /// El campo existe y no ha cambiado.
     Present,
+    /// El campo ha sido añadido por la herramienta.
     Added,
+    /// El valor ha sido modificado.
     Modified,
+    /// El campo existía y ha sido eliminado.
     Removed,
-    Preserved,
 }
 
 #[derive(Debug, Clone)]

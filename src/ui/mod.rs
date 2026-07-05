@@ -1,7 +1,9 @@
 pub mod header;
 pub mod image;
 pub mod metadata;
+pub mod plan;
 pub mod progress;
 pub mod project;
 pub mod summary;
 pub mod utils;
+pub mod writer;
