@@ -2,6 +2,12 @@
 name = "lazarobox-img"
 version = "0.4.1"
 edition = "2024"
+description = "Optimizador de imágenes y editor de metadatos (EXIF) con CLI y TUI."
+repository = "https://github.com/pichu2707/lazarobox-img"
+license = "MIT"
+readme = "README.md"
+keywords = ["image", "optimizer", "webp", "exif", "tui"]
+categories = ["command-line-utilities", "multimedia::images"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

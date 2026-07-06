@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/Rust-2024-orange?logo=rust" alt="Rust 2024">
   <img src="https://img.shields.io/badge/versión-0.4.1-blue" alt="versión 0.4.1">
   <img src="https://img.shields.io/badge/UI-ratatui-purple" alt="ratatui">
+  <img src="https://img.shields.io/badge/licencia-MIT-green" alt="MIT">
 </p>
 
 ---
@@ -160,7 +161,7 @@ src/
 
 ## 📄 Licencia
 
-Pendiente de definir.
+[MIT](LICENSE) © pichu2707
 
 ---
 
