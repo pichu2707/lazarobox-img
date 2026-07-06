@@ -10,6 +10,7 @@
 //!
 //! Este módulo no debe optimizar imágenes ni gestionar rutas de salida.
 pub mod ai;
+pub mod editor;
 pub mod image;
 pub mod parsers;
 pub mod plan;

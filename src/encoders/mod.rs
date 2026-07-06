@@ -1,3 +1,5 @@
+mod jpeg;
+mod png;
 mod webp;
 
 use anyhow::Result;
@@ -14,8 +16,8 @@ pub fn save_image(
 ) -> Result<u64> {
     match format {
         OutputFormat::Webp => webp::save(image, output_path, quality),
-        OutputFormat::Avif => todo!("AVIF todavía no implementado"),
-        OutputFormat::Jpeg => todo!("JPEG todavía no implementado"),
-        OutputFormat::Png => todo!("PNG todavía no implementado"),
+        OutputFormat::Png => png::save(image, output_path),
+        OutputFormat::Jpeg => jpeg::save(image, output_path, quality),
+        OutputFormat::Avif => anyhow::bail!("El codificador AVIF aún no está implementado"),
     }
 }

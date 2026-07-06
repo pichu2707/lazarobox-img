@@ -1,6 +1,6 @@
 [package]
 name = "lazarobox-img"
-version = "0.4-preview"
+version = "0.4.1"
 edition = "2024"
 
 [dependencies]
@@ -12,3 +12,6 @@ console = "0.16"
 walkdir = "2"
 anyhow = "1"
 kamadak-exif = "0.6.1"
+ratatui = "0.30.2"
+crossterm = "0.29.0"
+little_exif = "0.6.23"

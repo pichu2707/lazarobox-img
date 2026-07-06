@@ -1,3 +1,5 @@
+mod app;
+mod converter;
 mod encoders;
 mod export;
 mod inspector;
@@ -6,6 +8,7 @@ mod optimizer;
 mod policy;
 mod scanner;
 mod theme;
+mod tui;
 mod types;
 mod ui;
 
@@ -42,6 +45,16 @@ struct Args {
 }
 
 fn main() -> anyhow::Result<()> {
+    if std::env::args().len() == 1 {
+        let mut terminal = tui::terminal::init_terminal()?;
+        let mut controller = app::AppController::new();
+
+        let result = tui::app::run(&mut terminal, &mut controller);
+
+        tui::terminal::restore_terminal(terminal)?;
+
+        return result;
+    }
     let args = Args::parse();
 
     ui::header::print();
@@ -75,6 +88,7 @@ fn main() -> anyhow::Result<()> {
             &image.display().to_string(),
         );
         let metadata = metadata::read_metadata(image)?;
+        // presentacion::console::metadata::print(&metadata);
         ui::metadata::print(&metadata);
         ui::progress::print(&progress);
         let metadata_plan = metadata::plan::build_remove_ai_plan(&metadata);
