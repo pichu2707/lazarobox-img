@@ -1,167 +1,167 @@
-# Lazarobox-IMG
+<p align="center">
+  <img src="img/lazarobox-img.png" alt="LazaroBox Image" width="680">
+</p>
 
-> Los módulos son responsables del comportamiento. Los datos viajan entre ellos.
+<h1 align="center">LazaroBox Image</h1>
 
-## v0.0 — Bootstrap
+<p align="center">
+  Optimizador de imágenes y editor de metadatos, en la terminal.<br>
+  CLI para automatizar · TUI interactiva para trabajar cómodo.
+</p>
 
-Primera estructura del proyecto y definición de la arquitectura base.
+<p align="center">
+  <img src="https://img.shields.io/badge/Rust-2024-orange?logo=rust" alt="Rust 2024">
+  <img src="https://img.shields.io/badge/versión-0.4.1-blue" alt="versión 0.4.1">
+  <img src="https://img.shields.io/badge/UI-ratatui-purple" alt="ratatui">
+</p>
 
-### Incluye
+---
 
-- Creación del proyecto en Rust.
-- Configuración inicial de Cargo.
-- Organización de módulos.
-- Primeras pruebas con imágenes.
-- Def
+## ✨ Qué es
 
-## v0.1 — Optimization Engine
+**LazaroBox Image** es una herramienta en Rust para **optimizar imágenes** (redimensionar
+y comprimir) y **leer/editar sus metadatos** (EXIF), pensada tanto para scripts como para
+uso interactivo.
 
-Primera versión funcional del optimizador.
+- **Sin argumentos** abre una **TUI interactiva** (basada en [ratatui](https://ratatui.rs)):
+  navegás carpetas, elegís imágenes y ves los resultados sin salir del teclado.
+- **Con argumentos** funciona como **CLI** clásica, ideal para automatizar lotes.
 
-### Incluye
+## 🚀 Características
 
-- Escaneo de imagen o carpeta.
-- Detección de imágenes válidas.
-- Lectura de información básica:
-  - nombre
-  - peso
-  - resolución
-- Redimensionado por `width` y/o `height`.
-- Conversión a WebP.
-- Calidad configurable.
-- Exportación a carpeta `optimized-*`.
-- Reporte por imagen.
-- Resumen final con ahorro total, tiempo y ruta de salida.
+- 🗜️ **Optimización** — redimensiona por ancho/alto y comprime con calidad configurable.
+- 🔄 **Conversión** de formatos entre **WebP, PNG y JPEG**.
+- 🔍 **Inspección** — dimensiones, tamaño y formato de cualquier imagen.
+- 🏷️ **Metadatos** — lee EXIF y **edita a disco**: poner **GPS**, quitar **metadatos de IA**
+  y editar/añadir **alt text**.
+- 📁 **Navegador de archivos** integrado — nada de escribir rutas a mano.
+- 📊 **Barra de progreso** en el procesado por lotes, con **cancelación** (`Esc`).
+- 🐻 Interfaz con estilo LazaroBox, en español.
 
-### Objetivo
+## 📦 Instalación
 
-Validar el pipeline principal:
+Necesitás [Rust](https://rustup.rs) (edición 2024).
 
-Scanner → Inspector → Optimizer → Encoder → Export → Report
+```bash
+git clone https://github.com/pichu2707/lazarobox-img.git
+cd lazarobox-img
 
-## v0.2 — Metadata Engine
+# Compilar en modo release
+cargo build --release
 
-Versión centrada en modelar y leer metadatos.
+# O instalarlo en el PATH
+cargo install --path .
+```
 
-### Incluye
+El binario queda en `target/release/lazarobox-img`.
 
-- Modelo `ImageMetadata`.
-- Campos web:
-  - descripción
-  - alt text
-  - keywords
-- Campos de derechos:
-  - autor
-  - copyright
-  - licencia
-  - URL fuente
-- Campos IA:
-  - software
-  - modelo
-  - licencia
-  - source URL
-- Campos técnicos:
-  - orientación
-  - perfil de color
-- Reader EXIF inicial.
-- Parsers separados:
-  - web
-  - rights
-  - ai
-  - seo
-  - technical
-- Normalización de textos.
-- Detección inicial de software relacionado con edición/IA.
+> **Homebrew:** empaquetado en camino. 🍺
 
-### Objetivo
+## 🖥️ Uso
 
-Separar la lectura de metadatos del optimizador y crear un modelo ampliable para EXIF, IPTC, XMP, ICC y metadatos IA.
+### Modo interactivo (TUI)
 
-## v0.3 — Presentation Layer
+Ejecutá sin argumentos:
 
-## v0.3 — Architecture & UI Foundation
+```bash
+lazarobox-img
+```
 
-Versión centrada en la reorganización del proyecto, la separación por responsabilidades y la creación de una interfaz de consola unificada con el estilo LazaroBox.
+Se abre el menú principal. El navegador arranca en la carpeta desde donde lo lanzaste.
 
-### Incluye
+**Controles**
 
-#### Arquitectura
+| Contexto            | Teclas                                                              |
+| ------------------- | ------------------------------------------------------------------ |
+| Menú principal      | `↑ ↓` navegar · `Enter` elegir · `q` / `Esc` salir                 |
+| Navegador           | `↑ ↓` mover · `Enter` abrir carpeta / elegir archivo · `Backspace` subir · `Esc` volver |
+| Optimizar (config)  | `↑ ↓` campo · `← →` ajustar · `0-9` anchura/alto · `Enter` optimizar |
+| Optimizar (proceso) | `Esc` cancelar (conserva lo ya hecho)                              |
+| Convertir           | `← →` cambiar formato de destino                                    |
+| Metadatos           | `e` editar · en el editor: `↑ ↓` campo · `← →` alternar · `Enter` guardar |
 
-- Separación del proyecto en módulos independientes.
-- Organización de la carpeta `metadata`.
-- Organización de la carpeta `ui`.
-- Creación de `theme.rs` como lenguaje visual común.
-- Separación entre lógica de negocio y presentación.
-- Creación de documentación técnica (`docs/`).
+### Modo CLI
 
-#### Interfaz CLI
+```bash
+lazarobox-img <ENTRADA> [OPCIONES]
+```
 
-- Cabecera unificada de LazaroBox.
-- Vista del proyecto.
-- Vista de progreso.
-- Vista individual de optimización.
-- Resumen final.
-- Helpers reutilizables para toda la interfaz.
+`<ENTRADA>` puede ser una imagen o una carpeta (primer nivel).
 
-#### Metadata
+| Opción              | Descripción                          | Por defecto |
+| ------------------- | ------------------------------------ | ----------- |
+| `-w`, `--width <N>` | Ancho máximo de salida (px)          | —           |
+| `--height <N>`      | Alto máximo de salida (px)           | —           |
+| `-q`, `--quality`   | Calidad de salida (1–100)            | `80`        |
+| `-f`, `--format`    | Formato: `webp`, `jpg`, `png`        | `webp`      |
 
-- Separación entre:
-  - Reader
-  - Parsers
-  - Report
+**Ejemplo**
 
-- Normalización de valores.
-- Modelo de metadatos ampliable.
+```bash
+# Optimizar una carpeta a WebP, máximo 1200px de ancho
+lazarobox-img ./fotos --width 1200 --quality 82 --format webp
+```
 
-#### Calidad del código
+Los resultados se escriben en una carpeta `optimized-<nombre>/` junto a la entrada.
 
-- Eliminación de `println!` dispersos.
-- Centralización de la salida en `ui`.
-- Preparación del proyecto para una futura interfaz Ratatui.
+## 🖼️ Formatos soportados
 
-### Objetivo
+| Formato | Optimizar / Convertir | Leer metadatos | Escribir metadatos |
+| ------- | :-------------------: | :------------: | :----------------: |
+| WebP    |          ✅           |       ✅       |         ✅         |
+| JPEG    |          ✅           |       ✅       |         ✅         |
+| PNG     |          ✅           |       ✅       |         ❌         |
+| AVIF    |   ⏳ (pendiente)      |       —        |         —          |
 
-Transformar el proyecto desde un optimizador funcional hacia una aplicación modular, escalable y preparada para incorporar nuevas funcionalidades sin modificar el núcleo del sistema.
+> La **escritura** de metadatos está validada en **JPEG y WebP**. En PNG solo se leen
+> (los distintos lectores usan chunks incompatibles). AVIF está en el roadmap.
 
-v0.0 Bootstrap
-│
-▼
-v0.1 Image Optimization Engine
-│
-▼
-v0.2 Metadata Engine
-│
-▼
-v0.3 Architecture & UI Foundation
-│
-▼
-v0.4 Metadata Planning & Logical Writer
-│
-▼
-v0.5 Ratatui Interactive Interface
-│
-▼
-v0.6 Physical Metadata Writer
-│
-▼
-v0.7 Advanced Formats & Metadata Profiles
-│
-▼
-v1.0 Stable Release
+## 🏷️ Edición de metadatos
 
-## v0.4-preview — Remove AI Metadata Plan
+Desde la pantalla **Metadatos**, tras leer una imagen, pulsá `e` para editar:
 
-- Metadata Plan para eliminar trazas IA.
-- Writer lógico en memoria.
-- Preview antes/después.
-- No modifica aún el archivo físico.
+- **GPS** — poné latitud y longitud (grados decimales) o quitá las coordenadas.
+- **Quitar IA** — elimina las trazas de metadatos de herramientas de IA.
+- **Alt text** — editá o añadí la descripción de la imagen.
 
-## v0.5 — Ratatui TUI
+Los cambios se **escriben en el archivo** (mediante [`little_exif`](https://crates.io/crates/little_exif))
+y se vuelven a leer para confirmar.
 
-- Selección de acción.
-- Selección de imagen/carpeta.
-- Configuración de width, height, quality y format.
-- Vista de metadata.
-- Vista de plan remove-ai.
-- Vista de optimización.
-- Resumen final.
+## 🏗️ Arquitectura
+
+Separación por responsabilidades, con la TUI trabajando **siempre sobre el estado**
+(nunca directamente sobre el motor):
+
+```
+src/
+├── app/           # Estado (fuente única de verdad), controlador y navegador de archivos
+├── tui/           # Pantallas, widgets, bucle de eventos y terminal (ratatui)
+├── metadata/      # Lectura (EXIF) y escritura (editor) de metadatos + parsers
+├── encoders/      # WebP · PNG · JPEG
+├── optimizer.rs   # Motor de redimensionado
+├── converter.rs   # Conversión de formatos
+├── scanner.rs     # Descubrimiento de imágenes
+├── export.rs      # Rutas y carpetas de salida
+└── inspector.rs   # Información básica de una imagen
+```
+
+## 🗺️ Roadmap
+
+| Versión | Foco                                    | Estado |
+| ------- | --------------------------------------- | :----: |
+| v0.1    | Motor de optimización                   |   ✅   |
+| v0.2    | Motor de metadatos (lectura)            |   ✅   |
+| v0.3    | Arquitectura y capa de UI               |   ✅   |
+| v0.4    | Plan de metadatos y writer lógico       |   ✅   |
+| v0.5    | Interfaz interactiva Ratatui            |   ✅   |
+| v0.6    | Escritura física de metadatos (GPS/IA/alt) | 🚧 en curso |
+| v0.7    | Formatos avanzados y perfiles de metadatos |   ⏳   |
+| v1.0    | Release estable + Homebrew              |   ⏳   |
+
+## 📄 Licencia
+
+Pendiente de definir.
+
+---
+
+<p align="center">Hecho con 🦀 y 🐻 · <b>LazaroBox</b></p>
