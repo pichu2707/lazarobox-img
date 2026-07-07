@@ -20,7 +20,7 @@ use types::OutputFormat;
 #[derive(Parser, Debug)]
 #[command(
     name = "lazarobox-img",
-    version = "0.1.0",
+    version = env!("CARGO_PKG_VERSION"),
     about = "Optimizador de imágenes CLI con estilo LazaroBox"
 )]
 
