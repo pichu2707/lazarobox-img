@@ -1,10 +1,13 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use semver::Version;
 use serde::Deserialize;
+use std::process::{Command, Output};
 use std::time::Duration;
 
 pub const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 const CRATE_NAME: &str = "lazarobox-img";
+pub const HOMEBREW_FORMULA: &str = "pichu2707/tap/lazarobox-img";
+pub const HOMEBREW_INSTALL_COMMAND: &str = "brew install pichu2707/tap/lazarobox-img";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UpdateStatus {
@@ -12,6 +15,9 @@ pub enum UpdateStatus {
     Checking,
     UpToDate,
     UpdateAvailable,
+    Confirming,
+    Updating,
+    Updated,
     Error,
 }
 
@@ -19,6 +25,27 @@ pub enum UpdateStatus {
 pub struct UpdateCheck {
     pub latest_version: String,
     pub status: UpdateStatus,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BrewCommand {
+    pub program: &'static str,
+    pub args: Vec<&'static str>,
+}
+
+impl BrewCommand {
+    pub fn display(&self) -> String {
+        std::iter::once(self.program)
+            .chain(self.args.iter().copied())
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HomebrewUpdateResult {
+    pub formula: String,
+    pub output: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -102,6 +129,125 @@ pub fn compare_versions(current: &str, latest: &str) -> Result<UpdateStatus> {
     }
 }
 
+pub fn homebrew_update_commands() -> Vec<BrewCommand> {
+    vec![
+        BrewCommand {
+            program: "brew",
+            args: vec!["update"],
+        },
+        BrewCommand {
+            program: "brew",
+            args: vec!["upgrade", HOMEBREW_FORMULA],
+        },
+    ]
+}
+
+pub fn homebrew_update_command_text() -> String {
+    homebrew_update_commands()
+        .iter()
+        .map(BrewCommand::display)
+        .collect::<Vec<_>>()
+        .join(" && ")
+}
+
+pub fn run_homebrew_update() -> Result<HomebrewUpdateResult> {
+    ensure_homebrew_available()?;
+    let formula = installed_homebrew_formula()?;
+    let commands = homebrew_update_commands();
+    let mut log = String::new();
+
+    for command in commands {
+        let output = run_brew_command(&command.args)?;
+        append_command_output(&mut log, &command, &output);
+
+        if !output.status.success() {
+            bail!(
+                "Homebrew devolvió un error al ejecutar `{}`.\n{}",
+                command.display(),
+                format_output(&output)
+            );
+        }
+    }
+
+    Ok(HomebrewUpdateResult {
+        formula,
+        output: log,
+    })
+}
+
+fn ensure_homebrew_available() -> Result<()> {
+    let output = Command::new("brew")
+        .arg("--version")
+        .output()
+        .context(homebrew_install_message())?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        bail!(homebrew_install_message())
+    }
+}
+
+fn installed_homebrew_formula() -> Result<String> {
+    for formula in [HOMEBREW_FORMULA, CRATE_NAME] {
+        let output = run_brew_command(&["list", "--versions", formula])?;
+        if output.status.success() && !String::from_utf8_lossy(&output.stdout).trim().is_empty() {
+            return Ok(formula.to_string());
+        }
+    }
+
+    bail!(homebrew_install_message())
+}
+
+fn run_brew_command(args: &[&str]) -> Result<Output> {
+    Command::new("brew")
+        .args(args)
+        .output()
+        .context(homebrew_install_message())
+}
+
+fn homebrew_install_message() -> String {
+    format!(
+        "Actualización desde la TUI disponible solo con Homebrew. Instala la fórmula con `{HOMEBREW_INSTALL_COMMAND}` para activarla."
+    )
+}
+
+fn append_command_output(log: &mut String, command: &BrewCommand, output: &Output) {
+    if !log.is_empty() {
+        log.push('\n');
+    }
+    log.push_str("$ ");
+    log.push_str(&command.display());
+    log.push('\n');
+    log.push_str(&format_output(output));
+}
+
+fn format_output(output: &Output) -> String {
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let mut text = String::new();
+
+    text.push_str("resultado: ");
+    text.push_str(&output.status.to_string());
+    text.push('\n');
+
+    if !stdout.trim().is_empty() {
+        text.push_str("stdout:\n");
+        text.push_str(stdout.trim());
+        text.push('\n');
+    }
+    if !stderr.trim().is_empty() {
+        text.push_str("stderr:\n");
+        text.push_str(stderr.trim());
+        text.push('\n');
+    }
+    if stdout.trim().is_empty() && stderr.trim().is_empty() {
+        text.push_str("sin salida\n");
+    }
+
+    text
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -149,6 +295,29 @@ mod tests {
             error
                 .to_string()
                 .contains("crates.io no devolvió una versión estable")
+        );
+    }
+
+    #[test]
+    fn homebrew_update_commands_use_tapped_formula_without_shell() {
+        let commands = homebrew_update_commands();
+
+        assert_eq!(
+            commands,
+            vec![
+                BrewCommand {
+                    program: "brew",
+                    args: vec!["update"]
+                },
+                BrewCommand {
+                    program: "brew",
+                    args: vec!["upgrade", "pichu2707/tap/lazarobox-img"]
+                }
+            ]
+        );
+        assert_eq!(
+            homebrew_update_command_text(),
+            "brew update && brew upgrade pichu2707/tap/lazarobox-img"
         );
     }
 }

@@ -40,6 +40,7 @@ impl AppController {
     pub fn settings_check_updates(&mut self) {
         self.state.update.latest_version = None;
         self.state.update.error = None;
+        self.state.update.log = None;
         self.state.update.status = UpdateStatus::Checking;
     }
 
@@ -59,6 +60,60 @@ impl AppController {
                 self.state.update.latest_version = None;
                 self.state.update.status = UpdateStatus::Error;
                 self.state.update.error = Some(err.to_string());
+            }
+        }
+    }
+
+    /// Pide confirmación antes de ejecutar Homebrew.
+    pub fn settings_confirm_homebrew_update(&mut self) {
+        if self.state.update.status != UpdateStatus::UpdateAvailable {
+            return;
+        }
+
+        self.state.update.status = UpdateStatus::Confirming;
+        self.state.update.error = None;
+        self.state.update.log = Some(crate::update::homebrew_update_command_text());
+    }
+
+    /// Cancela la confirmación y vuelve al estado de actualización disponible.
+    pub fn settings_cancel_homebrew_update(&mut self) {
+        if self.state.update.status == UpdateStatus::Confirming {
+            self.state.update.status = UpdateStatus::UpdateAvailable;
+            self.state.update.log = None;
+        }
+    }
+
+    /// Marca la actualización por Homebrew como pendiente.
+    pub fn settings_start_homebrew_update(&mut self) {
+        if self.state.update.status != UpdateStatus::Confirming {
+            return;
+        }
+
+        self.state.update.status = UpdateStatus::Updating;
+        self.state.update.error = None;
+        self.state.update.log = Some(crate::update::homebrew_update_command_text());
+    }
+
+    /// Ejecuta la actualización por Homebrew.
+    pub fn settings_run_homebrew_update(&mut self) {
+        if self.state.update.status != UpdateStatus::Updating {
+            return;
+        }
+
+        match crate::update::run_homebrew_update() {
+            Ok(result) => {
+                self.state.update.status = UpdateStatus::Updated;
+                self.state.update.error = None;
+                self.state.update.log = Some(format!(
+                    "Fórmula actualizada: {}\n{}\nReinicia la app para usar la nueva versión.",
+                    result.formula, result.output
+                ));
+            }
+            Err(err) => {
+                let message = err.to_string();
+                self.state.update.status = UpdateStatus::Error;
+                self.state.update.error = Some(message.clone());
+                self.state.update.log = Some(message);
             }
         }
     }
@@ -695,5 +750,44 @@ mod tests {
 
         assert!(controller.state.metadata_view.lat_input.is_empty());
         assert!(controller.state.metadata_view.lon_input.is_empty());
+    }
+
+    #[test]
+    fn settings_homebrew_update_confirmation_can_be_cancelled() {
+        let mut controller = AppController::new();
+        controller.state.update.status = UpdateStatus::UpdateAvailable;
+
+        controller.settings_confirm_homebrew_update();
+
+        assert_eq!(controller.state.update.status, UpdateStatus::Confirming);
+        assert_eq!(
+            controller.state.update.log.as_deref(),
+            Some("brew update && brew upgrade pichu2707/tap/lazarobox-img")
+        );
+
+        controller.settings_cancel_homebrew_update();
+
+        assert_eq!(
+            controller.state.update.status,
+            UpdateStatus::UpdateAvailable
+        );
+        assert!(controller.state.update.log.is_none());
+    }
+
+    #[test]
+    fn settings_homebrew_update_starts_only_after_confirmation() {
+        let mut controller = AppController::new();
+
+        controller.settings_start_homebrew_update();
+        assert_eq!(controller.state.update.status, UpdateStatus::NotChecked);
+
+        controller.state.update.status = UpdateStatus::Confirming;
+        controller.settings_start_homebrew_update();
+
+        assert_eq!(controller.state.update.status, UpdateStatus::Updating);
+        assert_eq!(
+            controller.state.update.log.as_deref(),
+            Some("brew update && brew upgrade pichu2707/tap/lazarobox-img")
+        );
     }
 }

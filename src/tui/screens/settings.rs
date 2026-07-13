@@ -33,7 +33,7 @@ pub fn render(frame: &mut Frame, state: &AppState) {
     frame.render_widget(heading, chunks[0]);
 
     frame.render_widget(body(state), chunks[2]);
-    frame.render_widget(footer("c Comprobar actualización   Esc Volver"), chunks[3]);
+    frame.render_widget(footer(footer_text(state)), chunks[3]);
 }
 
 fn body(state: &AppState) -> Paragraph<'static> {
@@ -48,40 +48,83 @@ fn body(state: &AppState) -> Paragraph<'static> {
     }
 
     lines.push(Line::from(""));
-    lines.push(status_line(state));
+    lines.extend(status_lines(state));
+
+    if let Some(log) = &update.log {
+        lines.push(Line::from(""));
+        for line in log.lines() {
+            lines.push(Line::from(Span::styled(
+                line.to_string(),
+                Style::default().fg(Color::Gray),
+            )));
+        }
+    }
 
     Paragraph::new(lines)
 }
 
-fn status_line(state: &AppState) -> Line<'static> {
+fn status_lines(state: &AppState) -> Vec<Line<'static>> {
     match state.update.status {
-        UpdateStatus::NotChecked => Line::from(Span::styled(
+        UpdateStatus::NotChecked => vec![Line::from(Span::styled(
             "Pulsa c para comprobar si hay una actualización disponible.",
             Style::default().fg(Color::Gray),
-        )),
-        UpdateStatus::Checking => Line::from(Span::styled(
+        ))],
+        UpdateStatus::Checking => vec![Line::from(Span::styled(
             "Comprobando actualización…",
             Style::default().fg(Color::Yellow),
-        )),
-        UpdateStatus::UpToDate => Line::from(Span::styled(
+        ))],
+        UpdateStatus::UpToDate => vec![Line::from(Span::styled(
             "✓ Estás usando la última versión estable.",
             Style::default()
                 .fg(Color::Green)
                 .add_modifier(Modifier::BOLD),
-        )),
-        UpdateStatus::UpdateAvailable => Line::from(Span::styled(
+        ))],
+        UpdateStatus::UpdateAvailable => vec![Line::from(Span::styled(
             "⚠ Hay una actualización disponible.",
             Style::default()
                 .fg(Color::Yellow)
                 .add_modifier(Modifier::BOLD),
-        )),
-        UpdateStatus::Error => Line::from(Span::styled(
+        ))],
+        UpdateStatus::Confirming => vec![
+            Line::from(Span::styled(
+                "Confirma la actualización por Homebrew.",
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )),
+            Line::from(Span::styled(
+                "Se ejecutarán estos comandos, sin sudo y sin Cargo:",
+                Style::default().fg(Color::Gray),
+            )),
+        ],
+        UpdateStatus::Updating => vec![Line::from(Span::styled(
+            "Actualizando…",
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        ))],
+        UpdateStatus::Updated => vec![Line::from(Span::styled(
+            "✓ Actualización completada. Reinicia la app para usar la nueva versión.",
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
+        ))],
+        UpdateStatus::Error => vec![Line::from(Span::styled(
             format!(
-                "✖ No se pudo comprobar la actualización: {}",
+                "✖ No se pudo completar la actualización: {}",
                 state.update.error.as_deref().unwrap_or("error desconocido")
             ),
             Style::default().fg(Color::Red),
-        )),
+        ))],
+    }
+}
+
+fn footer_text(state: &AppState) -> &'static str {
+    match state.update.status {
+        UpdateStatus::UpdateAvailable => "u Actualizar con Homebrew   c Comprobar   Esc Volver",
+        UpdateStatus::Confirming => "Enter Confirmar   Esc Cancelar",
+        UpdateStatus::Updating => "Actualizando…",
+        _ => "c Comprobar actualización   Esc Volver",
     }
 }
 

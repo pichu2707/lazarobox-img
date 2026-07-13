@@ -37,6 +37,12 @@ pub fn run(
                 controller.settings_run_update_check();
                 continue;
             }
+            Screen::Settings
+                if controller.state.update.status == crate::update::UpdateStatus::Updating =>
+            {
+                controller.settings_run_homebrew_update();
+                continue;
+            }
             Screen::Optimize if controller.state.optimize.step == OptimizeStep::Running => {
                 // Una imagen por fotograma; Esc cancela conservando lo hecho.
                 if matches!(events::poll_event()?, Some(AppEvent::Esc)) {
@@ -76,9 +82,19 @@ pub fn run(
 
 /// Ajustes: muestra versión actual y permite comprobar actualizaciones.
 fn handle_settings(controller: &mut AppController, event: AppEvent) {
+    if controller.state.update.status == crate::update::UpdateStatus::Confirming {
+        match event {
+            AppEvent::Enter => controller.settings_start_homebrew_update(),
+            AppEvent::Esc => controller.settings_cancel_homebrew_update(),
+            _ => {}
+        }
+        return;
+    }
+
     match event {
         AppEvent::Esc | AppEvent::Char('q') | AppEvent::Char('Q') => controller.go_to(Screen::Home),
         AppEvent::Char('c') | AppEvent::Char('C') => controller.settings_check_updates(),
+        AppEvent::Char('u') | AppEvent::Char('U') => controller.settings_confirm_homebrew_update(),
         _ => {}
     }
 }

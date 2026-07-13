@@ -199,6 +199,8 @@ pub struct UpdateState {
     pub status: UpdateStatus,
     /// Mensaje de error de la última comprobación fallida.
     pub error: Option<String>,
+    /// Salida o comandos de la actualización por Homebrew.
+    pub log: Option<String>,
 }
 
 impl Default for UpdateState {
@@ -208,6 +210,7 @@ impl Default for UpdateState {
             latest_version: None,
             status: UpdateStatus::NotChecked,
             error: None,
+            log: None,
         }
     }
 }
