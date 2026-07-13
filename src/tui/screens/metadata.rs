@@ -41,7 +41,7 @@ pub fn render(frame: &mut Frame, state: &AppState) {
         } else if view.editing {
             frame.render_widget(edit_body(state), chunks[2]);
             frame.render_widget(
-                footer("↑↓ Campo   ←→ Alternar   Enter Siguiente/Guardar   Esc Cancelar"),
+                footer("↑↓ Campo   ←→/Enter Alternar   Enter Siguiente/Guardar   Esc Cancelar"),
                 chunks[3],
             );
         } else {
@@ -109,6 +109,18 @@ fn result_body(state: &AppState) -> Paragraph<'static> {
         lines.push(coord_line(lat, lon));
     }
 
+    lines.extend([
+        Line::from(""),
+        Line::from(Span::styled(
+            "Pulsa e para editar alt text, GPS y limpieza IA.",
+            Style::default().fg(Color::Yellow),
+        )),
+        Line::from(Span::styled(
+            "Escritura soportada: JPEG y WebP.",
+            Style::default().fg(Color::DarkGray),
+        )),
+    ]);
+
     Paragraph::new(lines)
 }
 
@@ -124,10 +136,14 @@ fn edit_body(state: &AppState) -> Paragraph<'static> {
         )),
         Line::from(""),
         text_field("Alt text", &view.alt_input, f == MetaField::AltText),
-        text_field("Latitud", &view.lat_input, f == MetaField::Lat),
-        text_field("Longitud", &view.lon_input, f == MetaField::Lon),
+        text_field("Latitud GPS", &view.lat_input, f == MetaField::Lat),
+        text_field("Longitud GPS", &view.lon_input, f == MetaField::Lon),
         toggle_field("Quitar GPS", view.remove_gps, f == MetaField::RemoveGps),
         toggle_field("Quitar IA", view.remove_ai, f == MetaField::RemoveAi),
+        Line::from(Span::styled(
+            "GPS: rellena latitud y longitud para cambiar; Quitar GPS elimina ubicación.",
+            Style::default().fg(Color::DarkGray),
+        )),
         Line::from(""),
         save_line(f == MetaField::Save),
     ];
@@ -153,7 +169,10 @@ fn text_field(label: &str, value: &str, focused: bool) -> Line<'static> {
     };
 
     Line::from(vec![
-        Span::styled(format!("{marker}{label:<11}"), Style::default().fg(Color::Gray)),
+        Span::styled(
+            format!("{marker}{label:<13}"),
+            Style::default().fg(Color::Gray),
+        ),
         Span::styled(shown, Style::default().fg(color)),
     ])
 }
@@ -164,7 +183,10 @@ fn toggle_field(label: &str, on: bool, focused: bool) -> Line<'static> {
     let mark = if on { "[x]" } else { "[ ]" };
 
     Line::from(vec![
-        Span::styled(format!("{marker}{label:<11}"), Style::default().fg(Color::Gray)),
+        Span::styled(
+            format!("{marker}{label:<13}"),
+            Style::default().fg(Color::Gray),
+        ),
         Span::styled(mark.to_string(), Style::default().fg(color)),
     ])
 }
