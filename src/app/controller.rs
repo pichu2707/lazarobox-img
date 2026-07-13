@@ -217,13 +217,18 @@ impl AppController {
         self.state.metadata_view.saved = None;
     }
 
-    /// Entra en el formulario de edición, precargando el alt text actual.
+    /// Entra en el formulario de edición, precargando el alt text y GPS actuales.
     pub fn metadata_start_edit(&mut self) {
         if self.state.metadata_view.path.is_none() {
             return;
         }
 
         let view = &mut self.state.metadata_view;
+        let gps = view
+            .result
+            .as_ref()
+            .and_then(|m| Some((m.seo.latitude.value?, m.seo.longitude.value?)));
+
         view.alt_input = view
             .result
             .as_ref()
@@ -235,8 +240,13 @@ impl AppController {
                     .or_else(|| m.web.description.value.clone())
             })
             .unwrap_or_default();
-        view.lat_input.clear();
-        view.lon_input.clear();
+        if let Some((lat, lon)) = gps {
+            view.lat_input = lat.to_string();
+            view.lon_input = lon.to_string();
+        } else {
+            view.lat_input.clear();
+            view.lon_input.clear();
+        }
         view.remove_gps = false;
         view.remove_ai = false;
         view.focus = MetaField::AltText;
@@ -614,4 +624,44 @@ fn process_one(
 
     let optimized = result.outputs.iter().map(|output| output.size).sum();
     Ok((result.original.size, optimized))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::metadata::ImageMetadata;
+
+    #[test]
+    fn metadata_start_edit_preloads_existing_gps() {
+        let mut controller = AppController::new();
+        let mut metadata = ImageMetadata::default();
+        metadata.seo.latitude.value = Some(40.416775);
+        metadata.seo.longitude.value = Some(-3.70379);
+
+        controller.state.metadata_view.path = Some(PathBuf::from("image.jpg"));
+        controller.state.metadata_view.result = Some(metadata);
+
+        controller.metadata_start_edit();
+
+        assert_eq!(controller.state.metadata_view.lat_input, "40.416775");
+        assert_eq!(controller.state.metadata_view.lon_input, "-3.70379");
+        assert!(controller.state.metadata_view.editing);
+    }
+
+    #[test]
+    fn metadata_start_edit_clears_gps_inputs_when_coordinates_are_incomplete() {
+        let mut controller = AppController::new();
+        let mut metadata = ImageMetadata::default();
+        metadata.seo.latitude.value = Some(40.416775);
+
+        controller.state.metadata_view.path = Some(PathBuf::from("image.jpg"));
+        controller.state.metadata_view.result = Some(metadata);
+        controller.state.metadata_view.lat_input = "stale latitude".to_string();
+        controller.state.metadata_view.lon_input = "stale longitude".to_string();
+
+        controller.metadata_start_edit();
+
+        assert!(controller.state.metadata_view.lat_input.is_empty());
+        assert!(controller.state.metadata_view.lon_input.is_empty());
+    }
 }
