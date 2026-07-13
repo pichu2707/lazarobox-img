@@ -1,6 +1,6 @@
 [package]
 name = "lazarobox-img"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2024"
 description = "Optimizador de imágenes y editor de metadatos (EXIF) con CLI y TUI."
 repository = "https://github.com/pichu2707/lazarobox-img"
