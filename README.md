@@ -11,7 +11,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-2024-orange?logo=rust" alt="Rust 2024">
-  <img src="https://img.shields.io/badge/versión-0.4.1-blue" alt="versión 0.4.1">
+  <img src="https://img.shields.io/badge/versión-0.4.2-blue" alt="versión 0.4.2">
   <img src="https://img.shields.io/badge/UI-ratatui-purple" alt="ratatui">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="MIT">
 </p>
@@ -41,6 +41,22 @@ uso interactivo.
 
 ## 📦 Instalación
 
+### Homebrew
+
+La forma más cómoda de instalarlo en macOS o Linux es con Homebrew:
+
+```bash
+brew install pichu2707/tap/lazarobox-img
+```
+
+Después podés abrir la TUI ejecutando:
+
+```bash
+lazarobox-img
+```
+
+### Desde el código fuente
+
 Necesitás [Rust](https://rustup.rs) (edición 2024).
 
 ```bash
@@ -55,8 +71,6 @@ cargo install --path .
 ```
 
 El binario queda en `target/release/lazarobox-img`.
-
-> **Homebrew:** empaquetado en camino. 🍺
 
 ## 🖥️ Uso
 
