@@ -19,6 +19,7 @@ use crate::converter::Conversion;
 use crate::inspector::ImageInfo;
 use crate::metadata::ImageMetadata;
 use crate::types::OutputFormat;
+use crate::update::{CURRENT_VERSION, UpdateStatus};
 use std::path::PathBuf;
 
 /// Estado global de la aplicación.
@@ -42,6 +43,8 @@ pub struct AppState {
     pub metadata_view: MetadataView,
     /// Navegador de archivos compartido por las pantallas.
     pub browser: Browser,
+    /// Estado de comprobación de actualizaciones.
+    pub update: UpdateState,
 }
 
 /// Pantallas disponibles dentro de la aplicación.
@@ -183,6 +186,30 @@ pub struct ConvertState {
     pub viewing: bool,
     /// Ruta pendiente de convertir (mientras se muestra "Procesando…").
     pub pending: Option<PathBuf>,
+}
+
+/// Estado de la comprobación de actualizaciones.
+#[derive(Debug)]
+pub struct UpdateState {
+    /// Versión actual del binario.
+    pub current_version: &'static str,
+    /// Última versión estable publicada, si ya se consultó.
+    pub latest_version: Option<String>,
+    /// Estado visible de la comprobación.
+    pub status: UpdateStatus,
+    /// Mensaje de error de la última comprobación fallida.
+    pub error: Option<String>,
+}
+
+impl Default for UpdateState {
+    fn default() -> Self {
+        Self {
+            current_version: CURRENT_VERSION,
+            latest_version: None,
+            status: UpdateStatus::NotChecked,
+            error: None,
+        }
+    }
 }
 
 /// Campo enfocado en el formulario de edición de metadatos.

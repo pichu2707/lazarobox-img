@@ -3,6 +3,7 @@ use crate::app::{
     Screen,
 };
 use crate::types::OutputFormat;
+use crate::update::UpdateStatus;
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 
@@ -29,6 +30,37 @@ impl AppController {
         self.state.convert.viewing = false;
         self.state.metadata_view.viewing = false;
         self.state.optimize.step = OptimizeStep::Input;
+    }
+
+    // ---------------------------------------------------------------------
+    // Ajustes / actualizaciones
+    // ---------------------------------------------------------------------
+
+    /// Marca una comprobación de actualización como pendiente.
+    pub fn settings_check_updates(&mut self) {
+        self.state.update.latest_version = None;
+        self.state.update.error = None;
+        self.state.update.status = UpdateStatus::Checking;
+    }
+
+    /// Comprueba la última versión estable publicada en crates.io.
+    pub fn settings_run_update_check(&mut self) {
+        if self.state.update.status != UpdateStatus::Checking {
+            return;
+        }
+
+        match crate::update::check_latest_stable() {
+            Ok(result) => {
+                self.state.update.latest_version = Some(result.latest_version);
+                self.state.update.status = result.status;
+                self.state.update.error = None;
+            }
+            Err(err) => {
+                self.state.update.latest_version = None;
+                self.state.update.status = UpdateStatus::Error;
+                self.state.update.error = Some(err.to_string());
+            }
+        }
     }
 
     /// Mueve la selección del menú una posición hacia abajo, con wrap.

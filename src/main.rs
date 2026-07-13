@@ -11,6 +11,7 @@ mod theme;
 mod tui;
 mod types;
 mod ui;
+mod update;
 
 use clap::Parser;
 use std::path::PathBuf;

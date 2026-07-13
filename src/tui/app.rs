@@ -31,6 +31,12 @@ pub fn run(
                 controller.metadata_run_pending();
                 continue;
             }
+            Screen::Settings
+                if controller.state.update.status == crate::update::UpdateStatus::Checking =>
+            {
+                controller.settings_run_update_check();
+                continue;
+            }
             Screen::Optimize if controller.state.optimize.step == OptimizeStep::Running => {
                 // Una imagen por fotograma; Esc cancela conservando lo hecho.
                 if matches!(events::poll_event()?, Some(AppEvent::Esc)) {
@@ -61,18 +67,20 @@ pub fn run(
             Screen::Inspect => handle_inspect(controller, event),
             Screen::Convert => handle_convert(controller, event),
             Screen::Metadata => handle_metadata(controller, event),
-
-            // Pantallas placeholder: Esc o Q vuelven al Home.
-            _ => match event {
-                AppEvent::Esc | AppEvent::Char('q') | AppEvent::Char('Q') => {
-                    controller.go_to(Screen::Home)
-                }
-                _ => {}
-            },
+            Screen::Settings => handle_settings(controller, event),
         }
     }
 
     Ok(())
+}
+
+/// Ajustes: muestra versión actual y permite comprobar actualizaciones.
+fn handle_settings(controller: &mut AppController, event: AppEvent) {
+    match event {
+        AppEvent::Esc | AppEvent::Char('q') | AppEvent::Char('Q') => controller.go_to(Screen::Home),
+        AppEvent::Char('c') | AppEvent::Char('C') => controller.settings_check_updates(),
+        _ => {}
+    }
 }
 
 /// Inspección: navegar hasta un archivo y elegirlo, o ver el resultado.
